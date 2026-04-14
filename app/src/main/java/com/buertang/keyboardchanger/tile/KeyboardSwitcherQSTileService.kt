@@ -6,6 +6,7 @@ import android.graphics.drawable.Icon
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
+import androidx.annotation.RequiresPermission
 import com.buertang.keyboardchanger.MainActivity
 import com.buertang.keyboardchanger.R
 import com.buertang.keyboardchanger.data.AppPreferences
@@ -35,6 +36,7 @@ class KeyboardSwitcherQSTileService : TileService() {
         }
     }
 
+    @RequiresPermission("android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS")
     @SuppressLint("StartActivityAndCollapseDeprecated")
     override fun onClick() {
         super.onClick()
