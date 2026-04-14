@@ -1,0 +1,72 @@
+﻿<resources>
+    <string name="app_name">鍵盤切換器</string>
+
+    <string name="settings_title">鍵盤切換器設定</string>
+    <string name="about_title">關於鍵盤切換器</string>
+
+    <string name="open_keyboard_settings">開啟鍵盤設定</string>
+    <string name="choose_keyboard">選擇鍵盤</string>
+    <string name="about">關於</string>
+    <string name="back">返回</string>
+    <string name="about_version_prefix">版本</string>
+    <string name="about_short_intro">一個輕量工具，讓 Android 鍵盤切換更快、輸入法控制入口更清爽。</string>
+    <string name="about_open_source_title">Open Source</string>
+    <string name="about_open_source_value">https://github.com/your-name/KeyboardChanger</string>
+    <string name="about_author_title">Author</string>
+    <string name="about_author_value">https://github.com/your-name</string>
+    <string name="about_support_title">請我喝杯咖啡</string>
+    <string name="about_support_body">如果這個應用對你的工作流程有幫助，你可以把贊助二維碼或收款說明放在這裡。</string>
+    <string name="about_support_code_label">贊助說明</string>
+    <string name="about_support_code_value">在這裡放入贊助碼 / 二維碼說明</string>
+
+    <string name="error_open_keyboard_settings">無法開啟鍵盤設定。</string>
+    <string name="error_device_no_ime">此裝置不支援輸入法切換。</string>
+    <string name="error_open_keyboard_picker">無法開啟鍵盤選擇器。</string>
+    <string name="keyboard_picker_retry_message">如果沒有彈出鍵盤選擇器，請再試一次。</string>
+
+    <string name="launch_on_startup">重新開機後恢復</string>
+    <string name="enable_notification">啟用通知</string>
+    <string name="enable_floating_button">啟用懸浮按鈕</string>
+    <string name="theme_color">主題色</string>
+    <string name="theme_mode">外觀</string>
+    <string name="theme_mode_system">跟隨系統</string>
+    <string name="theme_mode_light">淺色</string>
+    <string name="theme_mode_dark">深色</string>
+    <string name="app_language">應用語言</string>
+    <string name="choose_app_language">選擇應用語言</string>
+    <string name="app_language_simplified_chinese">簡體中文</string>
+    <string name="app_language_traditional_chinese">繁體中文</string>
+    <string name="app_language_english">English</string>
+    <string name="change_theme_color">更改</string>
+    <string name="choose_theme_color">選擇主題色</string>
+    <string name="color_preview">預覽</string>
+    <string name="hex_color">HEX 顏色</string>
+    <string name="hex_color_hint">輸入 6 位十六進位顏色值，例如 6E90A9。</string>
+    <string name="invalid_hex_color">請輸入有效的 6 位 HEX 顏色值。</string>
+    <string name="invalid_rgb_color">RGB 數值必須在 0 到 255 之間。</string>
+    <string name="red">R</string>
+    <string name="green">G</string>
+    <string name="blue">B</string>
+    <string name="apply">套用</string>
+    <string name="cancel">取消</string>
+    <string name="restore_default_theme_color">恢復預設</string>
+
+    <string name="preferences">偏好設定</string>
+    <string name="behavior">行為</string>
+    <string name="actions">操作</string>
+
+    <string name="notification_channel_name">鍵盤切換通知</string>
+    <string name="notification_title">切換鍵盤</string>
+    <string name="notification_content">點按以選擇預設鍵盤。</string>
+
+    <string name="notification_required_for_floating_button">懸浮按鈕需要前景通知，因此在啟用懸浮按鈕時此設定會被鎖定。</string>
+
+    <string name="open_overlay_settings_failed">無法開啟懸浮窗設定。</string>
+    <string name="overlay_permission_required">懸浮按鈕需要懸浮窗權限。</string>
+
+    <string name="lock_floating_button_position">鎖定懸浮按鈕位置</string>
+    <string name="floating_button_size">懸浮按鈕大小</string>
+    <string name="widget_short_label">切換鍵盤</string>
+</resources>
+
+

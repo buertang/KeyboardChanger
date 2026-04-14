@@ -1,0 +1,72 @@
+﻿<resources>
+    <string name="app_name">Keyboard Changer</string>
+
+    <string name="settings_title">Keyboard Changer Settings</string>
+    <string name="about_title">About Keyboard Changer</string>
+
+    <string name="open_keyboard_settings">Open keyboard settings</string>
+    <string name="choose_keyboard">Choose keyboard</string>
+    <string name="about">About</string>
+    <string name="back">Back</string>
+    <string name="about_version_prefix">Version</string>
+    <string name="about_short_intro">A lightweight tool for faster keyboard switching and cleaner access to Android input method controls.</string>
+    <string name="about_open_source_title">Open Source</string>
+    <string name="about_open_source_value">https://github.com/your-name/KeyboardChanger</string>
+    <string name="about_author_title">Author</string>
+    <string name="about_author_value">https://github.com/your-name</string>
+    <string name="about_support_title">Buy Me A Coffee</string>
+    <string name="about_support_body">If this app helps your workflow, you can place your sponsorship QR code or payment note here.</string>
+    <string name="about_support_code_label">Support note</string>
+    <string name="about_support_code_value">Add your sponsor code / QR reference here</string>
+
+    <string name="error_open_keyboard_settings">Unable to open keyboard settings.</string>
+    <string name="error_device_no_ime">This device does not support input method switching.</string>
+    <string name="error_open_keyboard_picker">Unable to open keyboard picker.</string>
+    <string name="keyboard_picker_retry_message">If the keyboard picker does not appear, try again.</string>
+
+    <string name="launch_on_startup">Restore after reboot</string>
+    <string name="enable_notification">Enable notification</string>
+    <string name="enable_floating_button">Enable floating button</string>
+    <string name="theme_color">Theme color</string>
+    <string name="theme_mode">Appearance</string>
+    <string name="theme_mode_system">System</string>
+    <string name="theme_mode_light">Light</string>
+    <string name="theme_mode_dark">Dark</string>
+    <string name="app_language">App language</string>
+    <string name="choose_app_language">Choose app language</string>
+    <string name="app_language_english">English</string>
+    <string name="app_language_simplified_chinese">Simplified Chinese</string>
+    <string name="app_language_traditional_chinese">Traditional Chinese</string>
+    <string name="change_theme_color">Change</string>
+    <string name="choose_theme_color">Choose theme color</string>
+    <string name="color_preview">Preview</string>
+    <string name="hex_color">HEX color</string>
+    <string name="hex_color_hint">Use 6 hexadecimal digits, for example 6E90A9.</string>
+    <string name="invalid_hex_color">Enter a valid 6-digit HEX color.</string>
+    <string name="invalid_rgb_color">RGB values must be between 0 and 255.</string>
+    <string name="red">R</string>
+    <string name="green">G</string>
+    <string name="blue">B</string>
+    <string name="apply">Apply</string>
+    <string name="cancel">Cancel</string>
+    <string name="restore_default_theme_color">Restore default</string>
+
+    <string name="preferences">Preferences</string>
+    <string name="behavior">Behavior</string>
+    <string name="actions">Actions</string>
+
+    <string name="notification_channel_name">Keyboard switcher notification</string>
+    <string name="notification_title">Switch keyboard</string>
+    <string name="notification_content">Tap to choose the default keyboard.</string>
+    <string name="explanation_service_special_use" translatable="false">Foreground service for keyboard switching notification.</string>
+    <string name="notification_required_for_floating_button">The floating button requires a foreground notification, so this setting is locked while the floating button is enabled.</string>
+
+    <string name="open_overlay_settings_failed">Unable to open overlay settings.</string>
+    <string name="overlay_permission_required">Overlay permission is required for the floating button.</string>
+
+    <string name="lock_floating_button_position">Lock floating button position</string>
+    <string name="floating_button_size">Floating button size</string>
+    <string name="widget_short_label">Keyboard</string>
+</resources>
+
+

@@ -1,0 +1,72 @@
+﻿<resources>
+    <string name="app_name">键盘切换器</string>
+
+    <string name="settings_title">键盘切换器设置</string>
+    <string name="about_title">关于键盘切换器</string>
+
+    <string name="open_keyboard_settings">打开键盘设置</string>
+    <string name="choose_keyboard">选择键盘</string>
+    <string name="about">关于</string>
+    <string name="back">返回</string>
+    <string name="about_version_prefix">版本</string>
+    <string name="about_short_intro">一个轻量工具，让 Android 键盘切换更快、输入法控制入口更清爽。</string>
+    <string name="about_open_source_title">Open Source</string>
+    <string name="about_open_source_value">https://github.com/your-name/KeyboardChanger</string>
+    <string name="about_author_title">Author</string>
+    <string name="about_author_value">https://github.com/your-name</string>
+    <string name="about_support_title">请我喝杯咖啡</string>
+    <string name="about_support_body">如果这个应用对你的工作流有帮助，你可以把赞助二维码或收款说明放在这里。</string>
+    <string name="about_support_code_label">赞助说明</string>
+    <string name="about_support_code_value">在这里放入赞助码 / 二维码说明</string>
+
+    <string name="error_open_keyboard_settings">无法打开键盘设置。</string>
+    <string name="error_device_no_ime">此设备不支持输入法切换。</string>
+    <string name="error_open_keyboard_picker">无法打开键盘选择器。</string>
+    <string name="keyboard_picker_retry_message">如果没有弹出键盘选择器，请再试一次。</string>
+
+    <string name="launch_on_startup">重启后恢复</string>
+    <string name="enable_notification">启用通知</string>
+    <string name="enable_floating_button">启用悬浮按钮</string>
+    <string name="theme_color">主题色</string>
+    <string name="theme_mode">外观</string>
+    <string name="theme_mode_system">跟随系统</string>
+    <string name="theme_mode_light">浅色</string>
+    <string name="theme_mode_dark">深色</string>
+    <string name="app_language">应用语言</string>
+    <string name="choose_app_language">选择应用语言</string>
+    <string name="app_language_english">English</string>
+    <string name="app_language_simplified_chinese">简体中文</string>
+    <string name="app_language_traditional_chinese">繁體中文</string>
+    <string name="change_theme_color">更改</string>
+    <string name="choose_theme_color">选择主题色</string>
+    <string name="color_preview">预览</string>
+    <string name="hex_color">HEX 颜色</string>
+    <string name="hex_color_hint">输入 6 位十六进制颜色值，例如 6E90A9。</string>
+    <string name="invalid_hex_color">请输入有效的 6 位 HEX 颜色值。</string>
+    <string name="invalid_rgb_color">RGB 数值必须在 0 到 255 之间。</string>
+    <string name="red">R</string>
+    <string name="green">G</string>
+    <string name="blue">B</string>
+    <string name="apply">应用</string>
+    <string name="cancel">取消</string>
+    <string name="restore_default_theme_color">恢复默认</string>
+
+    <string name="preferences">偏好设置</string>
+    <string name="behavior">行为</string>
+    <string name="actions">操作</string>
+
+    <string name="notification_channel_name">键盘切换通知</string>
+    <string name="notification_title">切换键盘</string>
+    <string name="notification_content">点按以选择默认键盘。</string>
+
+    <string name="notification_required_for_floating_button">悬浮按钮需要前台通知，因此在启用悬浮按钮时此设置会被锁定。</string>
+
+    <string name="open_overlay_settings_failed">无法打开悬浮窗设置。</string>
+    <string name="overlay_permission_required">悬浮按钮需要悬浮窗权限。</string>
+
+    <string name="lock_floating_button_position">锁定悬浮按钮位置</string>
+    <string name="floating_button_size">悬浮按钮大小</string>
+    <string name="widget_short_label">切换键盘</string>
+</resources>
+
+
