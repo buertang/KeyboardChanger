@@ -65,6 +65,16 @@ class AppPreferences private constructor(
             putInt(PreferenceKeys.FLOATING_BUTTON_SIZE, value)
         }
 
+    var floatingButtonAnchor: String?
+        get() = preferences.getString(PreferenceKeys.FLOATING_BUTTON_ANCHOR, null)
+        set(value) = preferences.edit {
+            if (value == null) {
+                remove(PreferenceKeys.FLOATING_BUTTON_ANCHOR)
+            } else {
+                putString(PreferenceKeys.FLOATING_BUTTON_ANCHOR, value)
+            }
+        }
+
     var floatingButtonX: Int
         get() = preferences.getInt(PreferenceKeys.FLOATING_BUTTON_X, 0)
         set(value) = preferences.edit {

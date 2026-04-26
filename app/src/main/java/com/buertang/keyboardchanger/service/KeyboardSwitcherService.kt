@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
@@ -30,9 +31,15 @@ import kotlin.math.abs
 import kotlin.math.max
 
 class KeyboardSwitcherService : Service(), View.OnTouchListener {
-    private enum class EdgeAnchor {
-        LEFT,
-        RIGHT
+    private enum class EdgeAnchor(val storageValue: String) {
+        LEFT("LEFT"),
+        RIGHT("RIGHT");
+
+        companion object {
+            fun fromStorageValue(value: String?): EdgeAnchor? {
+                return values().firstOrNull { it.storageValue == value }
+            }
+        }
     }
 
     private lateinit var windowManager: WindowManager
@@ -47,6 +54,8 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
     private var initialTouchX = 0f
     private var initialTouchY = 0f
     private var moved = false
+    private var currentEdgeAnchor: EdgeAnchor? = null
+    private var dragStartAnchor: EdgeAnchor? = null
     private var isFloatingButtonIdle = false
     private var isFloatingButtonPartiallyHidden = false
 
@@ -191,6 +200,7 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
         }
 
         val sizePx = calculateFloatingButtonSizePx()
+        val restoredAnchor = restoredEdgeAnchor(sizePx)
 
         floatingLayoutParams = WindowManager.LayoutParams(
             sizePx,
@@ -200,9 +210,14 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.TOP or Gravity.START
-            x = appPreferences.floatingButtonX
             y = appPreferences.floatingButtonY
+            if (restoredAnchor != null) {
+                gravity = gravityForAnchor(restoredAnchor)
+                x = 0
+            } else {
+                gravity = Gravity.TOP or Gravity.START
+                x = appPreferences.floatingButtonX
+            }
         }
 
         val iconView = ImageView(this)
@@ -227,7 +242,13 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
         windowManager.addView(floatingButton, floatingLayoutParams)
         floatingButton?.let { button ->
             floatingLayoutParams?.let { params ->
-                applyFreeState(button, params)
+                if (restoredAnchor != null) {
+                    applyAnchoredState(button, params, restoredAnchor, partiallyHidden = false)
+                    persistFloatingButtonPosition(params, restoredAnchor)
+                } else {
+                    applyFreeState(button, params)
+                    persistFloatingButtonPosition(params, anchor = null)
+                }
             }
         }
         scheduleIdleFade()
@@ -242,12 +263,13 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
         params.width = sizePx
         params.height = sizePx
         applyFloatingButtonAppearance(button, icon, sizePx)
-        val anchor = edgeAnchorForX(params.x, maxXForButton(button, params))
+        val anchor = currentEdgeAnchor
         if (anchor != null) {
             applyAnchoredState(button, params, anchor, isFloatingButtonPartiallyHidden)
         } else {
             applyFreeState(button, params)
         }
+        persistFloatingButtonPosition(params, currentEdgeAnchor)
         scheduleIdleFade()
     }
 
@@ -259,10 +281,21 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
         floatingButton = null
         floatingIcon = null
         floatingLayoutParams = null
+        currentEdgeAnchor = null
+        dragStartAnchor = null
         isFloatingButtonPartiallyHidden = false
     }
 
     private fun isFloatingButtonVisible(): Boolean = floatingButton != null
+
+    private fun restoredEdgeAnchor(buttonSizePx: Int): EdgeAnchor? {
+        val storedAnchor = EdgeAnchor.fromStorageValue(appPreferences.floatingButtonAnchor)
+        if (storedAnchor != null) {
+            return storedAnchor
+        }
+        val maxX = (resources.displayMetrics.widthPixels - buttonSizePx).coerceAtLeast(0)
+        return edgeAnchorForX(appPreferences.floatingButtonX, maxX)
+    }
 
     private fun edgeAnchorForX(x: Int, maxX: Int): EdgeAnchor? {
         val dockThresholdPx = dpToPx(DOCK_THRESHOLD_DP)
@@ -292,11 +325,10 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
     ) {
         val buttonWidth = view.width.takeIf { it > 0 } ?: params.width
         val hiddenOffset = hiddenOffsetPx(buttonWidth).toFloat()
-        params.x = when (anchor) {
-            EdgeAnchor.LEFT -> 0
-            EdgeAnchor.RIGHT -> maxXForButton(view, params)
-        }
+        params.gravity = gravityForAnchor(anchor)
+        params.x = 0
         params.y = params.y.coerceIn(0, maxYForButton(view, params))
+        currentEdgeAnchor = anchor
         isFloatingButtonPartiallyHidden = partiallyHidden
         view.translationX = when {
             !partiallyHidden -> 0f
@@ -308,12 +340,51 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
     }
 
     private fun applyFreeState(view: View, params: WindowManager.LayoutParams) {
+        params.gravity = Gravity.TOP or Gravity.START
         params.x = params.x.coerceIn(0, maxXForButton(view, params))
         params.y = params.y.coerceIn(0, maxYForButton(view, params))
+        currentEdgeAnchor = null
         isFloatingButtonPartiallyHidden = false
         view.translationX = 0f
         windowManager.updateViewLayout(view, params)
         applyFloatingButtonAlpha(view, animate = false)
+    }
+
+    private fun prepareForDragging(view: View, params: WindowManager.LayoutParams) {
+        val absoluteX = currentAbsoluteX(view, params)
+        params.gravity = Gravity.TOP or Gravity.START
+        params.x = absoluteX.coerceIn(0, maxXForButton(view, params))
+        params.y = params.y.coerceIn(0, maxYForButton(view, params))
+        view.translationX = 0f
+        windowManager.updateViewLayout(view, params)
+    }
+
+    private fun currentAbsoluteX(view: View, params: WindowManager.LayoutParams): Int {
+        return when (currentEdgeAnchor) {
+            EdgeAnchor.LEFT -> 0
+            EdgeAnchor.RIGHT -> maxXForButton(view, params)
+            null -> params.x
+        }
+    }
+
+    private fun gravityForAnchor(anchor: EdgeAnchor): Int {
+        return Gravity.TOP or when (anchor) {
+            EdgeAnchor.LEFT -> Gravity.START
+            EdgeAnchor.RIGHT -> Gravity.END
+        }
+    }
+
+    private fun persistFloatingButtonPosition(
+        params: WindowManager.LayoutParams,
+        anchor: EdgeAnchor?
+    ) {
+        appPreferences.floatingButtonY = params.y
+        appPreferences.floatingButtonAnchor = anchor?.storageValue
+        if (anchor == null) {
+            appPreferences.floatingButtonX = params.x
+        } else {
+            appPreferences.floatingButtonX = 0
+        }
     }
 
     private fun maxXForButton(view: View, params: WindowManager.LayoutParams): Int {
@@ -408,7 +479,11 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
                 }
 
                 moved = false
-                initialX = params.x
+                dragStartAnchor = currentEdgeAnchor
+                if (dragStartAnchor != null) {
+                    prepareForDragging(view, params)
+                }
+                initialX = currentAbsoluteX(view, params)
                 initialY = params.y
                 initialTouchX = event.rawX
                 initialTouchY = event.rawY
@@ -429,7 +504,7 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
 
                 if (moved) {
                     val maxX = maxXForButton(view, params)
-                    val startAnchor = edgeAnchorForX(initialX, maxX)
+                    val startAnchor = dragStartAnchor
                     val toggleThresholdPx = dpToPx(EDGE_TOGGLE_THRESHOLD_DP)
 
                     params.x = (initialX + dx).coerceIn(0, maxX)
@@ -459,35 +534,52 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
                 }
 
                 if (moved) {
-                    val maxX = maxXForButton(view, params)
-                    val currentAnchor = edgeAnchorForX(params.x, maxX)
+                    val currentAnchor = currentEdgeAnchor
+                        ?: edgeAnchorForX(params.x, maxXForButton(view, params))
                     if (isFloatingButtonPartiallyHidden && currentAnchor != null) {
                         applyAnchoredState(view, params, currentAnchor, partiallyHidden = true)
                     } else {
                         snapToNearestEdge(view, params)
                     }
-                    appPreferences.floatingButtonX = params.x
-                    appPreferences.floatingButtonY = params.y
+                    persistFloatingButtonPosition(params, currentEdgeAnchor)
+                    dragStartAnchor = null
                     scheduleIdleFade()
                     return true
                 }
-                val currentAnchor = edgeAnchorForX(params.x, maxXForButton(view, params))
+                val currentAnchor = dragStartAnchor
                 if (currentAnchor != null) {
                     applyAnchoredState(view, params, currentAnchor, isFloatingButtonPartiallyHidden)
                 }
+                persistFloatingButtonPosition(params, currentEdgeAnchor)
+                dragStartAnchor = null
                 scheduleIdleFade()
             }
 
             MotionEvent.ACTION_CANCEL -> {
-                val currentAnchor = edgeAnchorForX(params.x, maxXForButton(view, params))
+                val currentAnchor = dragStartAnchor
                 if (currentAnchor != null) {
                     applyAnchoredState(view, params, currentAnchor, isFloatingButtonPartiallyHidden)
                 }
+                persistFloatingButtonPosition(params, currentEdgeAnchor)
+                dragStartAnchor = null
                 scheduleIdleFade()
             }
         }
 
         return false
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val button = floatingButton ?: return
+        val params = floatingLayoutParams ?: return
+        val anchor = currentEdgeAnchor
+        if (anchor != null) {
+            applyAnchoredState(button, params, anchor, isFloatingButtonPartiallyHidden)
+        } else {
+            applyFreeState(button, params)
+        }
+        persistFloatingButtonPosition(params, currentEdgeAnchor)
     }
 
     override fun onDestroy() {
