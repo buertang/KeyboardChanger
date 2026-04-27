@@ -87,6 +87,20 @@ class AppPreferences private constructor(
             putInt(PreferenceKeys.FLOATING_BUTTON_Y, value)
         }
 
+    var floatingButtonYRatio: Float?
+        get() = if (preferences.contains(PreferenceKeys.FLOATING_BUTTON_Y_RATIO)) {
+            preferences.getFloat(PreferenceKeys.FLOATING_BUTTON_Y_RATIO, 0f)
+        } else {
+            null
+        }
+        set(value) = preferences.edit {
+            if (value == null) {
+                remove(PreferenceKeys.FLOATING_BUTTON_Y_RATIO)
+            } else {
+                putFloat(PreferenceKeys.FLOATING_BUTTON_Y_RATIO, value)
+            }
+        }
+
     companion object {
         fun from(context: Context): AppPreferences {
             return AppPreferences(

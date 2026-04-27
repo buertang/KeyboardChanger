@@ -12,6 +12,7 @@ object PreferenceKeys {
     const val FLOATING_BUTTON_ANCHOR = "floating_button_anchor"
     const val FLOATING_BUTTON_X = "floating_button_x"
     const val FLOATING_BUTTON_Y = "floating_button_y"
+    const val FLOATING_BUTTON_Y_RATIO = "floating_button_y_ratio"
     const val THEME_COLOR_RGB = "theme_color_rgb"
     const val THEME_MODE = "theme_mode"
     const val APP_LANGUAGE = "app_language"

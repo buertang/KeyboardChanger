@@ -7,15 +7,19 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.hardware.display.DisplayManager
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.provider.Settings
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowInsets
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -29,6 +33,7 @@ import com.buertang.keyboardchanger.keyboard.KeyboardManagerActivity
 import com.buertang.keyboardchanger.ui.language.AppLanguageManager
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 class KeyboardSwitcherService : Service(), View.OnTouchListener {
     private enum class EdgeAnchor(val storageValue: String) {
@@ -43,6 +48,7 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
     }
 
     private lateinit var windowManager: WindowManager
+    private lateinit var displayManager: DisplayManager
     private lateinit var appPreferences: AppPreferences
 
     private var floatingButton: FrameLayout? = null
@@ -65,12 +71,30 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
         applyFloatingButtonAlpha(button, animate = true)
     }
 
+    private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
+
+    private val overlayRelayoutRunnable = Runnable {
+        repositionFloatingButton()
+    }
+
+    private val displayListener = object : DisplayManager.DisplayListener {
+        override fun onDisplayAdded(displayId: Int) = Unit
+
+        override fun onDisplayRemoved(displayId: Int) = Unit
+
+        override fun onDisplayChanged(displayId: Int) {
+            scheduleOverlayRelayout()
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         appPreferences = AppPreferences.from(this)
+        displayManager.registerDisplayListener(displayListener, mainHandler)
         createNotificationChannel()
     }
 
@@ -210,7 +234,7 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
-            y = appPreferences.floatingButtonY
+            y = restoredFloatingButtonY(sizePx)
             if (restoredAnchor != null) {
                 gravity = gravityForAnchor(restoredAnchor)
                 x = 0
@@ -258,10 +282,13 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
         val button = floatingButton ?: return
         val icon = floatingIcon ?: return
         val params = floatingLayoutParams ?: return
+        val currentButtonHeight = button.height.takeIf { it > 0 } ?: params.height
+        val yRatio = yRatioForButton(params.y, currentButtonHeight)
 
         val sizePx = calculateFloatingButtonSizePx()
         params.width = sizePx
         params.height = sizePx
+        params.y = yPositionForButton(sizePx, yRatio, params.y)
         applyFloatingButtonAppearance(button, icon, sizePx)
         val anchor = currentEdgeAnchor
         if (anchor != null) {
@@ -275,6 +302,7 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
 
     private fun removeFloatingButton() {
         cancelIdleFade()
+        cancelOverlayRelayout()
         floatingButton?.let {
             windowManager.removeView(it)
         }
@@ -293,8 +321,16 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
         if (storedAnchor != null) {
             return storedAnchor
         }
-        val maxX = (resources.displayMetrics.widthPixels - buttonSizePx).coerceAtLeast(0)
+        val maxX = (availableScreenWidthPx() - buttonSizePx).coerceAtLeast(0)
         return edgeAnchorForX(appPreferences.floatingButtonX, maxX)
+    }
+
+    private fun restoredFloatingButtonY(buttonHeightPx: Int): Int {
+        return yPositionForButton(
+            buttonHeightPx,
+            appPreferences.floatingButtonYRatio,
+            appPreferences.floatingButtonY
+        )
     }
 
     private fun edgeAnchorForX(x: Int, maxX: Int): EdgeAnchor? {
@@ -309,7 +345,7 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
     private fun snapToNearestEdge(view: View, params: WindowManager.LayoutParams) {
         val buttonWidth = view.width.takeIf { it > 0 } ?: params.width
         val centerX = params.x + buttonWidth / 2
-        val anchor = if (centerX < resources.displayMetrics.widthPixels / 2) {
+        val anchor = if (centerX < availableScreenWidthPx() / 2) {
             EdgeAnchor.LEFT
         } else {
             EdgeAnchor.RIGHT
@@ -379,6 +415,7 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
         anchor: EdgeAnchor?
     ) {
         appPreferences.floatingButtonY = params.y
+        appPreferences.floatingButtonYRatio = yRatioForButton(params.y, params.height)
         appPreferences.floatingButtonAnchor = anchor?.storageValue
         if (anchor == null) {
             appPreferences.floatingButtonX = params.x
@@ -389,12 +426,58 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
 
     private fun maxXForButton(view: View, params: WindowManager.LayoutParams): Int {
         val buttonWidth = view.width.takeIf { it > 0 } ?: params.width
-        return (resources.displayMetrics.widthPixels - buttonWidth).coerceAtLeast(0)
+        return (availableScreenWidthPx() - buttonWidth).coerceAtLeast(0)
     }
 
     private fun maxYForButton(view: View, params: WindowManager.LayoutParams): Int {
         val buttonHeight = view.height.takeIf { it > 0 } ?: params.height
-        return (resources.displayMetrics.heightPixels - buttonHeight).coerceAtLeast(0)
+        return maxYForButtonHeight(buttonHeight)
+    }
+
+    private fun maxYForButtonHeight(buttonHeight: Int): Int {
+        return (availableScreenHeightPx() - buttonHeight).coerceAtLeast(0)
+    }
+
+    private fun availableScreenWidthPx(): Int {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val metrics = windowManager.currentWindowMetrics
+            val insets = metrics.windowInsets.getInsetsIgnoringVisibility(
+                WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout()
+            )
+            return (metrics.bounds.width() - insets.left - insets.right).coerceAtLeast(0)
+        }
+        return resources.displayMetrics.widthPixels
+    }
+
+    private fun availableScreenHeightPx(): Int {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val metrics = windowManager.currentWindowMetrics
+            val insets = metrics.windowInsets.getInsetsIgnoringVisibility(
+                WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout()
+            )
+            return (metrics.bounds.height() - insets.top - insets.bottom).coerceAtLeast(0)
+        }
+        return resources.displayMetrics.heightPixels
+    }
+
+    private fun yRatioForButton(y: Int, buttonHeight: Int): Float {
+        val maxY = maxYForButtonHeight(buttonHeight)
+        if (maxY <= 0) {
+            return 0f
+        }
+        return (y.coerceIn(0, maxY).toFloat() / maxY.toFloat()).coerceIn(0f, 1f)
+    }
+
+    private fun yPositionForButton(buttonHeight: Int, yRatio: Float?, fallbackY: Int): Int {
+        val maxY = maxYForButtonHeight(buttonHeight)
+        if (maxY <= 0) {
+            return 0
+        }
+        return if (yRatio != null) {
+            (maxY * yRatio.coerceIn(0f, 1f)).roundToInt()
+        } else {
+            fallbackY.coerceIn(0, maxY)
+        }
     }
 
     private fun visibleWidthPx(buttonWidth: Int): Int {
@@ -428,12 +511,35 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
         floatingButton?.removeCallbacks(idleFadeRunnable)
     }
 
+    private fun cancelOverlayRelayout() {
+        floatingButton?.removeCallbacks(overlayRelayoutRunnable)
+    }
+
     private fun scheduleIdleFade() {
         val button = floatingButton ?: return
         cancelIdleFade()
         isFloatingButtonIdle = false
         applyFloatingButtonAlpha(button, animate = true)
         button.postDelayed(idleFadeRunnable, IDLE_FADE_DELAY_MS)
+    }
+
+    private fun scheduleOverlayRelayout() {
+        val button = floatingButton ?: return
+        cancelOverlayRelayout()
+        button.postOnAnimation(overlayRelayoutRunnable)
+    }
+
+    private fun repositionFloatingButton() {
+        val button = floatingButton ?: return
+        val params = floatingLayoutParams ?: return
+        val buttonHeight = button.height.takeIf { it > 0 } ?: params.height
+        params.y = restoredFloatingButtonY(buttonHeight)
+        val anchor = currentEdgeAnchor
+        if (anchor != null) {
+            applyAnchoredState(button, params, anchor, isFloatingButtonPartiallyHidden)
+        } else {
+            applyFreeState(button, params)
+        }
     }
 
     private fun dpToPx(value: Float): Int {
@@ -571,18 +677,11 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        val button = floatingButton ?: return
-        val params = floatingLayoutParams ?: return
-        val anchor = currentEdgeAnchor
-        if (anchor != null) {
-            applyAnchoredState(button, params, anchor, isFloatingButtonPartiallyHidden)
-        } else {
-            applyFreeState(button, params)
-        }
-        persistFloatingButtonPosition(params, currentEdgeAnchor)
+        scheduleOverlayRelayout()
     }
 
     override fun onDestroy() {
+        displayManager.unregisterDisplayListener(displayListener)
         removeFloatingButton()
         super.onDestroy()
     }
