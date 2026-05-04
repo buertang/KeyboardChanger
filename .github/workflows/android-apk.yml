@@ -36,7 +36,12 @@ jobs:
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 --decode > release.jks
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "ANDROID_KEYSTORE_BASE64 is empty. Add it in repository Actions secrets."
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '\r\n\t ' | base64 --decode > release.jks
+          test -s release.jks
           {
             echo "storeFile=release.jks"
             printf 'storePassword=%s\n' "$KEYSTORE_PASSWORD"
