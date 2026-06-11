@@ -30,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
@@ -51,7 +50,7 @@ fun AboutScreen(
     val uriHandler = LocalUriHandler.current
     val context = LocalContext.current
     val openSourceUrl = stringResource(R.string.about_open_source_value)
-    val authorUrl = stringResource(R.string.about_author_value)
+    val authorUrl = stringResource(R.string.about_author_url)
     val versionName = remember(context) { readAppVersionInfo(context).versionName }
     val groupColor = lerp(
         MaterialTheme.colorScheme.surface,
@@ -95,7 +94,7 @@ fun AboutScreen(
                 title = stringResource(R.string.about_version_prefix),
                 value = versionName
             )
-            /*
+
             AboutDivider()
 
             AboutInfoRow(
@@ -108,10 +107,9 @@ fun AboutScreen(
 
             AboutInfoRow(
                 title = stringResource(R.string.about_author_title),
-                value = authorUrl,
+                value = stringResource(R.string.about_author_value),
                 onClick = { uriHandler.openUri(authorUrl) }
             )
-             */
         }
         /*
         AboutSectionHeader(title = stringResource(R.string.about_support_title))
@@ -219,26 +217,13 @@ private fun AboutHeroRow() {
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
+        Image(
+            painter = painterResource(R.drawable.ic_launcher_full),
+            contentDescription = stringResource(R.string.app_name),
             modifier = Modifier
                 .size(60.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.surface,
-                            MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    )
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(R.drawable.ic_launcher_foreground),
-                contentDescription = stringResource(R.string.app_name),
-                modifier = Modifier.size(40.dp)
-            )
-        }
+        )
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(

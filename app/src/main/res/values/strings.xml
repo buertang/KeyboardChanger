@@ -11,9 +11,10 @@
     <string name="about_version_prefix">Version</string>
     <string name="about_short_intro">A lightweight tool for faster keyboard switching and cleaner access to Android input method controls.</string>
     <string name="about_open_source_title">Open Source</string>
-    <string name="about_open_source_value">https://github.com/your-name/KeyboardChanger</string>
+    <string name="about_open_source_value">https://github.com/buertang/KeyboardChanger</string>
     <string name="about_author_title">Author</string>
-    <string name="about_author_value">https://github.com/your-name</string>
+    <string name="about_author_value">buertang</string>
+    <string name="about_author_url" translatable="false">https://github.com/buertang</string>
     <string name="about_support_title">Buy Me A Coffee</string>
     <string name="about_support_body">If this app helps your workflow, you can place your sponsorship QR code or payment note here.</string>
     <string name="about_support_code_label">Support note</string>

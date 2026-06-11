@@ -11,9 +11,10 @@
     <string name="about_version_prefix">版本</string>
     <string name="about_short_intro">一個輕量工具，讓 Android 鍵盤切換更快、輸入法控制入口更清爽。</string>
     <string name="about_open_source_title">Open Source</string>
-    <string name="about_open_source_value">https://github.com/your-name/KeyboardChanger</string>
-    <string name="about_author_title">Author</string>
-    <string name="about_author_value">https://github.com/your-name</string>
+    <string name="about_open_source_value">https://github.com/buertang/KeyboardChanger</string>
+    <string name="about_author_title">開發者</string>
+    <string name="about_author_value">buertang</string>
+    <string name="about_author_url" translatable="false">https://github.com/buertang</string>
     <string name="about_support_title">請我喝杯咖啡</string>
     <string name="about_support_body">如果這個應用對你的工作流程有幫助，你可以把贊助二維碼或收款說明放在這裡。</string>
     <string name="about_support_code_label">贊助說明</string>

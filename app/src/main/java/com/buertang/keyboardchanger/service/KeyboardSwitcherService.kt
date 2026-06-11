@@ -146,7 +146,7 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
         val localizedContext = localizedContext()
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setLargeIcon(BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher))
             .setContentTitle(localizedContext.getString(R.string.notification_title))
             .setContentText(localizedContext.getString(R.string.notification_content))
