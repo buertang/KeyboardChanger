@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.hardware.display.DisplayManager
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
@@ -146,6 +147,7 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setLargeIcon(BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher))
             .setContentTitle(localizedContext.getString(R.string.notification_title))
             .setContentText(localizedContext.getString(R.string.notification_content))
             .setOngoing(true)
@@ -187,22 +189,21 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
     }
 
     private fun applyFloatingButtonAppearance(button: FrameLayout, icon: ImageView, sizePx: Int) {
-        val topColor = blendWithWhite(appPreferences.themeColorRgb, 0.18f)
-        val bottomColor = blendWithBlack(appPreferences.themeColorRgb, 0.20f)
-        val strokeColor = blendWithBlack(appPreferences.themeColorRgb, 0.32f)
-
         button.background = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(topColor, bottomColor)
+            intArrayOf(
+                Color.rgb(255, 250, 236),
+                Color.rgb(255, 241, 207)
+            )
         ).apply {
             shape = GradientDrawable.OVAL
-            setStroke(dpToPx(1f), strokeColor)
+            setStroke(dpToPx(1f), Color.argb(40, 24, 35, 44))
         }
 
         val iconSizePx = calculateFloatingIconSizePx(sizePx)
         val iconLayoutParams = FrameLayout.LayoutParams(iconSizePx, iconSizePx, Gravity.CENTER)
         icon.layoutParams = iconLayoutParams
-        icon.setImageResource(R.drawable.ic_keyboard_tile)
+        icon.setImageResource(R.drawable.ic_launcher_foreground)
         icon.scaleType = ImageView.ScaleType.FIT_CENTER
         icon.setPadding(0, 0, 0, 0)
     }
@@ -544,30 +545,6 @@ class KeyboardSwitcherService : Service(), View.OnTouchListener {
 
     private fun dpToPx(value: Float): Int {
         return (value * resources.displayMetrics.density).toInt().coerceAtLeast(1)
-    }
-
-    private fun blendWithWhite(rgb: Int, amount: Float): Int {
-        return blendColor(rgb, 0xFFFFFF, amount)
-    }
-
-    private fun blendWithBlack(rgb: Int, amount: Float): Int {
-        return blendColor(rgb, 0x000000, amount)
-    }
-
-    private fun blendColor(baseRgb: Int, targetRgb: Int, amount: Float): Int {
-        val ratio = amount.coerceIn(0f, 1f)
-        val baseRed = (baseRgb shr 16) and 0xFF
-        val baseGreen = (baseRgb shr 8) and 0xFF
-        val baseBlue = baseRgb and 0xFF
-        val targetRed = (targetRgb shr 16) and 0xFF
-        val targetGreen = (targetRgb shr 8) and 0xFF
-        val targetBlue = targetRgb and 0xFF
-
-        val red = (baseRed + ((targetRed - baseRed) * ratio)).toInt().coerceIn(0, 255)
-        val green = (baseGreen + ((targetGreen - baseGreen) * ratio)).toInt().coerceIn(0, 255)
-        val blue = (baseBlue + ((targetBlue - baseBlue) * ratio)).toInt().coerceIn(0, 255)
-
-        return Color.rgb(red, green, blue)
     }
 
     override fun onTouch(view: View, event: MotionEvent): Boolean {

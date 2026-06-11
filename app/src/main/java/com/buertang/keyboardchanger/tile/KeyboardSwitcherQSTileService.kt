@@ -30,7 +30,10 @@ class KeyboardSwitcherQSTileService : TileService() {
 
         qsTile?.apply {
             label = localizedContext.getString(R.string.notification_title)
-            icon = Icon.createWithResource(this@KeyboardSwitcherQSTileService, R.drawable.ic_keyboard_tile)
+            icon = Icon.createWithResource(
+                this@KeyboardSwitcherQSTileService,
+                R.drawable.ic_keyboard_qs_tile
+            )
             state = Tile.STATE_ACTIVE
             updateTile()
         }

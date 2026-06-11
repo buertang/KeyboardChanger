@@ -3,21 +3,14 @@
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_keyboard_background"
-    android:padding="8dp">
+    android:padding="4dp">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/widget_keyboard_icon_background"
-        android:padding="12dp">
-
-        <ImageView
-            android:id="@+id/widget_icon"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="@string/choose_keyboard"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_keyboard_tile" />
-    </FrameLayout>
+    <ImageView
+        android:id="@+id/widget_icon"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:layout_gravity="center"
+        android:contentDescription="@string/choose_keyboard"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_launcher_foreground" />
 </FrameLayout>
